@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- IMG Tag Pixel Integration -->
@@ -8,6 +9,9 @@
     <title>Facebook Pixel Add to Cart with Form</title>
     <!-- Facebook Pixel Code -->
     <script>
+        // Add debugging flag
+        window.FB_PIXEL_DEBUG = true;
+
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
         n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -16,11 +20,25 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window,document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
+
+        // Initialize with debug mode enabled
         fbq('init', '1160947045795073', {
             autoConfig: true,
             em: true // Enables automatic advanced matching for email, phone, and other fields
         });
+
+        // Track PageView event
         fbq('track', 'PageView');
+        console.log('PageView event sent to Facebook Pixel');
+
+        // Override fbq to add logging
+        const originalFbq = window.fbq;
+        window.fbq = function() {
+            if (window.FB_PIXEL_DEBUG) {
+                console.log('Facebook Pixel call:', arguments);
+            }
+            return originalFbq.apply(this, arguments);
+        };
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
@@ -48,8 +66,84 @@
 
     <!-- JavaScript to trigger the addToCart event -->
     <script>
+        // Function to check if Facebook Pixel is loaded
+        function isFacebookPixelLoaded() {
+            return typeof fbq === 'function';
+        }
+
+        // Function to send test event
+        function sendTestEvent() {
+            if (isFacebookPixelLoaded()) {
+                console.log('Sending test event to Facebook Pixel');
+                fbq('trackCustom', 'TestEvent', {test_param: 'test_value'});
+            } else {
+                console.error('Facebook Pixel is not loaded');
+            }
+        }
+
+        // Send a test event after 3 seconds to verify pixel is working
+        setTimeout(sendTestEvent, 3000);
+
         document.getElementById('addToCartButton').addEventListener('click', function() {
+            console.log('Add to Cart button clicked');
+
+            // Check if Facebook Pixel is loaded
+            if (!isFacebookPixelLoaded()) {
+                console.error('Facebook Pixel is not loaded when Add to Cart was clicked');
+                alert('Error: Facebook Pixel is not loaded. Please check console for details.');
+                return;
+            }
+
             // Get the values from the form
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            if (!name || !email) {
+                alert('Please enter both your name and email.');
+                return;
+            }
+
+            try {
+                // Prepare event parameters according to Facebook's standard format
+                const eventParams = {
+                    content_name: 'Test Product',
+                    content_category: 'Example Category',
+                    content_ids: ['1234'],
+                    content_type: 'product',
+                    value: 50.00,
+                    currency: 'USD',
+                    // Include user data for better tracking
+                    user_data: {
+                        name: name,
+                        email: email,
+                        phone: phone
+                    }
+                };
+
+                console.log('Sending AddToCart event with params:', eventParams);
+
+                // Trigger Facebook Pixel AddToCart event with user data
+                fbq('track', 'AddToCart', eventParams);
+
+                // Verify event was sent
+                console.log('AddToCart event sent to Facebook Pixel');
+                alert('Product added to cart! Event sent to Facebook Pixel.');
+            } catch (error) {
+                console.error('Error sending AddToCart event:', error);
+                alert('Error sending event to Facebook Pixel. Please check console for details.');
+            }
+        });
+
+        // Add event listener for Add to Wishlist button
+        document.getElementById('addToWishlistButton').addEventListener('click', function() {
+            console.log('Add to Wishlist button clicked');
+
+            if (!isFacebookPixelLoaded()) {
+                console.error('Facebook Pixel is not loaded when Add to Wishlist was clicked');
+                return;
+            }
+
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
 
@@ -58,16 +152,20 @@
                 return;
             }
 
-            // Trigger Facebook Pixel AddToCart event with user data
-            fbq('track', 'AddToCart', {
-                content_name: 'Test Product',
-                content_category: 'Example Category',
-                content_ids: ['1234'],
-                content_type: 'product',
-                value: 50.00,
-                currency: 'USD',
-                user_name: name
-            });
+            try {
+                // Track AddToWishlist event
+                fbq('track', 'AddToWishlist', {
+                    content_name: 'Test Product',
+                    content_category: 'Example Category',
+                    content_ids: ['1234'],
+                    value: 50.00,
+                    currency: 'USD'
+                });
+                console.log('AddToWishlist event sent to Facebook Pixel');
+                alert('Product added to wishlist! Event sent to Facebook Pixel.');
+            } catch (error) {
+                console.error('Error sending AddToWishlist event:', error);
+            }
         });
     </script>
 </body>
