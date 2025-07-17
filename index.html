@@ -17,13 +17,14 @@
         'https://connect.facebook.net/en_US/fbevents.js');
 
         // Initialize pixel
-        fbq('init', '1160947045795073');
+        fbq('init', '1160947045795073', {
+            autoConfig: true,
+            em: true // Enables automatic advanced matching for email, phone, and other fields
+        });
 
         // Track PageView event
         fbq('track', 'PageView');
 
-        // Add debugging
-        console.log('Facebook Pixel initialized with ID: 1160947045795073');
         console.log('PageView event sent');
     </script>
     <noscript>
