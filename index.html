@@ -1,49 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- IMG Tag Pixel Integration -->
-    <img src="https://www.facebook.com/tr?id=1160947045795073&ev=PageView&noscript=1" />
     <title>Facebook Pixel Add to Cart with Form</title>
-    <!-- Facebook Pixel Code -->
-    <script>
-        // Add debugging flag
-        window.FB_PIXEL_DEBUG = true;
 
+    <!-- Meta Pixel Code - Using Facebook's official implementation -->
+    <script>
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
         n.callMethod.apply(n,arguments):n.queue.push(arguments)};
         if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
         n.queue=[];t=b.createElement(e);t.async=!0;
         t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window,document,'script',
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
 
-        // Initialize with debug mode enabled
-        fbq('init', '1160947045795073', {
-            autoConfig: true,
-            em: true // Enables automatic advanced matching for email, phone, and other fields
-        });
+        // Initialize pixel
+        fbq('init', '1160947045795073');
 
         // Track PageView event
         fbq('track', 'PageView');
-        console.log('PageView event sent to Facebook Pixel');
 
-        // Override fbq to add logging
-        const originalFbq = window.fbq;
-        window.fbq = function() {
-            if (window.FB_PIXEL_DEBUG) {
-                console.log('Facebook Pixel call:', arguments);
-            }
-            return originalFbq.apply(this, arguments);
-        };
+        // Add debugging
+        console.log('Facebook Pixel initialized with ID: 1160947045795073');
+        console.log('PageView event sent');
     </script>
-    <noscript>
-        <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=1160947045795073&ev=PageView&noscript=1"/>
-    </noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body>
     <h1>Facebook Pixel Add to Cart Test</h1>
@@ -76,6 +59,7 @@
             if (isFacebookPixelLoaded()) {
                 console.log('Sending test event to Facebook Pixel');
                 fbq('trackCustom', 'TestEvent', {test_param: 'test_value'});
+                console.log('Test event sent to Facebook Pixel');
             } else {
                 console.error('Facebook Pixel is not loaded');
             }
@@ -105,6 +89,14 @@
             }
 
             try {
+                // First, set advanced matching parameters
+                fbq('init', '1160947045795073', {
+                    em: email,
+                    fn: name.split(' ')[0],
+                    ln: name.split(' ').length > 1 ? name.split(' ')[1] : '',
+                    ph: phone
+                });
+
                 // Prepare event parameters according to Facebook's standard format
                 const eventParams = {
                     content_name: 'Test Product',
@@ -112,18 +104,12 @@
                     content_ids: ['1234'],
                     content_type: 'product',
                     value: 50.00,
-                    currency: 'USD',
-                    // Include user data for better tracking
-                    user_data: {
-                        name: name,
-                        email: email,
-                        phone: phone
-                    }
+                    currency: 'USD'
                 };
 
                 console.log('Sending AddToCart event with params:', eventParams);
 
-                // Trigger Facebook Pixel AddToCart event with user data
+                // Trigger Facebook Pixel AddToCart event
                 fbq('track', 'AddToCart', eventParams);
 
                 // Verify event was sent
@@ -153,6 +139,13 @@
             }
 
             try {
+                // First, set advanced matching parameters
+                fbq('init', '1160947045795073', {
+                    em: email,
+                    fn: name.split(' ')[0],
+                    ln: name.split(' ').length > 1 ? name.split(' ')[1] : ''
+                });
+
                 // Track AddToWishlist event
                 fbq('track', 'AddToWishlist', {
                     content_name: 'Test Product',
@@ -161,11 +154,24 @@
                     value: 50.00,
                     currency: 'USD'
                 });
+
                 console.log('AddToWishlist event sent to Facebook Pixel');
                 alert('Product added to wishlist! Event sent to Facebook Pixel.');
             } catch (error) {
                 console.error('Error sending AddToWishlist event:', error);
             }
+        });
+
+        // Add a button to manually test the pixel
+        window.addEventListener('load', function() {
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Test Facebook Pixel';
+            testButton.style.marginTop = '20px';
+            testButton.onclick = function() {
+                sendTestEvent();
+                alert('Test event sent. Check browser console for details.');
+            };
+            document.body.appendChild(testButton);
         });
     </script>
 </body>
